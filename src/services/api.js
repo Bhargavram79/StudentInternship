@@ -28,6 +28,10 @@ function getCurrentUser() {
 // ====================== AUTH ======================
 export async function register(data) {
     const res = await API.post('/auth/register', data);
+    // Store JWT token from auto-login response
+    if (res.data?.data?.token) {
+        localStorage.setItem('token', res.data.data.token);
+    }
     return res.data;
 }
 

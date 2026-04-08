@@ -33,7 +33,7 @@ const Certificates = () => {
             setGrade('A');
             setShowForm(false);
             fetchData();
-        } catch (err) { toast.error(err.response?.data?.message || 'Failed to issue certificate'); }
+        } catch (err) { toast.error(err.response?.data?.error || 'Failed to issue certificate'); }
         finally { setLoading(false); }
     };
 

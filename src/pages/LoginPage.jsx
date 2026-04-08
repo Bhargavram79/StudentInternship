@@ -106,12 +106,14 @@ const LoginPage = () => {
 
         setLoading(true);
         try {
-            const { data } = await login(form);
-            loginUser(data);
+            const res = await login(form);
+            const userData = res.data;
+            loginUser(userData);
             toast.success('Login successful!');
-            navigate(data.role === 'ADMIN' ? '/admin' : '/student');
+            navigate(userData.role === 'ADMIN' ? '/admin' : '/student');
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Invalid credentials');
+            toast.error(err.response?.data?.error || 'Invalid credentials');
+            refreshCaptcha();
         } finally {
             setLoading(false);
         }

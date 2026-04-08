@@ -17,10 +17,11 @@ const SettingsPage = () => {
         setSavingProfile(true);
         try {
             const res = await updateProfile({ name: profileForm.name });
-            loginUser({ ...res.data, token: user.token });
+            // Update the user in context (no token in user object — it's in localStorage)
+            loginUser({ ...user, ...res.data });
             toast.success('Profile updated successfully!');
         } catch (err) {
-            toast.error('Failed to update profile');
+            toast.error(err.response?.data?.error || 'Failed to update profile');
         } finally { setSavingProfile(false); }
     };
 
@@ -41,7 +42,7 @@ const SettingsPage = () => {
             toast.success('Password changed successfully!');
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (err) {
-            toast.error('Failed to change password');
+            toast.error(err.response?.data?.error || 'Failed to change password');
         } finally { setSavingPassword(false); }
     };
 

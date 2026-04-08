@@ -41,12 +41,13 @@ const RegisterPage = () => {
         setLoading(true);
         try {
             // Always register as STUDENT — admin accounts are created by existing admins only
-            const { data } = await register({ ...form, role: 'STUDENT' });
-            loginUser(data);
+            const res = await register({ ...form, role: 'STUDENT' });
+            const userData = res.data;
+            loginUser(userData);
             toast.success('Account created successfully!');
             navigate('/student');
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Registration failed');
+            toast.error(err.response?.data?.error || 'Registration failed');
         } finally {
             setLoading(false);
         }

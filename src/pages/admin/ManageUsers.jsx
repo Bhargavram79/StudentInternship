@@ -81,7 +81,7 @@ const ManageUsers = () => {
             setNewUserForm({ name: '', email: '', password: '', role: 'STUDENT' });
             await fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create user');
+            toast.error(err.response?.data?.error || 'Failed to create user');
         } finally {
             setAddLoading(false);
         }
@@ -95,7 +95,7 @@ const ManageUsers = () => {
             if (selectedUser?.id === userId) setSelectedUser(null);
             await fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete user');
+            toast.error(err.response?.data?.error || 'Failed to delete user');
         }
     };
 
