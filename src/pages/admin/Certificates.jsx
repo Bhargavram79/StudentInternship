@@ -1,90 +1,172 @@
 import { useState, useEffect } from 'react';
-import { getCertificates, issueCertificate, getStudents, getInternships } from '../../services/api';
-import { FiAward, FiPlus, FiX, FiSend, FiUser, FiBriefcase } from 'react-icons/fi';
+import { getCertificates, issueCertificate, getEligibleForCertificate } from '../../services/api';
+import { FiAward, FiPlus, FiX, FiSend, FiUser, FiBriefcase, FiHash, FiCalendar, FiCheckCircle, FiAlertTriangle, FiShield, FiDownload } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { exportToCSV, formatCertificatesForExport } from '../../utils/exportCSV';
 
 const Certificates = () => {
     const [certificates, setCertificates] = useState([]);
-    const [students, setStudents] = useState([]);
-    const [internships, setInternships] = useState([]);
+    const [eligible, setEligible] = useState([]);
     const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ studentId: '', internshipId: '', grade: 'A' });
+    const [selectedPair, setSelectedPair] = useState(null);
+    const [grade, setGrade] = useState('A');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
         try {
-            const [certRes, stuRes, intRes] = await Promise.all([getCertificates(), getStudents(), getInternships()]);
+            const [certRes, eligRes] = await Promise.all([getCertificates(), getEligibleForCertificate()]);
             setCertificates(certRes.data);
-            setStudents(stuRes.data);
-            setInternships(intRes.data);
+            setEligible(eligRes.data);
         } catch (err) { console.error(err); }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!form.studentId || !form.internshipId) { toast.error('Select student and internship'); return; }
+    const handleSubmit = async () => {
+        if (!selectedPair) { toast.error('Select a student-internship pair'); return; }
+        if (!selectedPair.isEligible) { toast.error('This student is not eligible — must complete ≥70% tasks'); return; }
         setLoading(true);
         try {
-            await issueCertificate({ studentId: Number(form.studentId), internshipId: Number(form.internshipId), grade: form.grade });
+            await issueCertificate({ studentId: selectedPair.student.id, internshipId: selectedPair.internship.id, grade });
             toast.success('Certificate issued successfully!');
-            setForm({ studentId: '', internshipId: '', grade: 'A' });
+            setSelectedPair(null);
+            setGrade('A');
             setShowForm(false);
             fetchData();
-        } catch (err) { toast.error('Failed to issue certificate'); }
+        } catch (err) { toast.error(err.response?.data?.message || 'Failed to issue certificate'); }
         finally { setLoading(false); }
     };
 
     const gradeColors = { 'A+': '#10b981', 'A': '#06d6a0', 'B+': '#3b82f6', 'B': '#60a5fa', 'C+': '#f59e0b', 'C': '#fbbf24' };
+
+    const eligibleOnly = eligible.filter(e => e.isEligible);
+    const notYetEligible = eligible.filter(e => !e.isEligible);
 
     return (
         <div className="dashboard-page">
             <div className="page-header">
                 <div>
                     <h1>Certificates</h1>
-                    <p>Issue and manage completion certificates</p>
+                    <p>Issue completion certificates to eligible students</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-                    {showForm ? <><FiX /> Cancel</> : <><FiPlus /> Issue Certificate</>}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className="search-count">{certificates.length} issued</span>
+                    <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(formatCertificatesForExport(certificates), 'InternHub_Certificates')}>
+                        <FiDownload /> Export
+                    </button>
+                    <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+                        {showForm ? <><FiX /> Cancel</> : <><FiPlus /> Issue Certificate</>}
+                    </button>
+                </div>
+            </div>
+
+            {/* Security Notice */}
+            <div className="cert-security-notice">
+                <FiShield />
+                <div>
+                    <strong>Integrity Protection Active</strong>
+                    <p>Certificates can only be issued to students who: (1) have an accepted application, (2) completed ≥70% of assigned tasks, and (3) haven't already received a certificate for that internship.</p>
+                </div>
             </div>
 
             {showForm && (
-                <div className="card cert-form-card">
-                    <form onSubmit={handleSubmit} className="cert-form">
-                        <div className="form-row-3">
-                            <div className="form-group">
-                                <label><FiUser /> Student</label>
-                                <select value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })}>
-                                    <option value="">Select student...</option>
-                                    {students.map(s => <option key={s.id} value={s.id}>{s.userId} — {s.name}</option>)}
-                                </select>
+                <div className="card cert-form-card" style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ marginBottom: '1rem' }}><FiAward /> Issue New Certificate</h3>
+
+                    {/* Eligible Students */}
+                    {eligibleOnly.length > 0 ? (
+                        <>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                Select a student who has completed their internship requirements:
+                            </p>
+                            <div className="eligible-list">
+                                {eligibleOnly.map((e, i) => (
+                                    <div
+                                        key={`${e.student.id}-${e.internship.id}-${i}`}
+                                        className={`eligible-card ${selectedPair === e ? 'selected' : ''}`}
+                                        onClick={() => setSelectedPair(e)}
+                                    >
+                                        <div className="eligible-card-top">
+                                            <div className="eligible-avatar">{e.student.name?.charAt(0)}</div>
+                                            <div className="eligible-info">
+                                                <strong>{e.student.name}</strong>
+                                                <span>{e.student.userId}</span>
+                                            </div>
+                                            <FiCheckCircle className="eligible-check" />
+                                        </div>
+                                        <div className="eligible-internship">
+                                            <FiBriefcase /> {e.internship.title} — {e.internship.company}
+                                        </div>
+                                        <div className="eligible-stats">
+                                            <span>✅ {e.completedTasks}/{e.totalTasks} tasks ({e.completionRate}%)</span>
+                                            <span>📄 {e.reports} reports</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="form-group">
-                                <label><FiBriefcase /> Internship</label>
-                                <select value={form.internshipId} onChange={(e) => setForm({ ...form, internshipId: e.target.value })}>
-                                    <option value="">Select internship...</option>
-                                    {internships.map(i => <option key={i.id} value={i.id}>{i.title}</option>)}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label><FiAward /> Grade</label>
-                                <select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })}>
-                                    {['A+', 'A', 'B+', 'B', 'C+', 'C'].map(g => <option key={g} value={g}>{g}</option>)}
-                                </select>
+
+                            {selectedPair && (
+                                <div className="cert-issue-confirm">
+                                    <div className="cert-preview-mini">
+                                        <div className="cert-preview-header">
+                                            <FiAward /> <span>InternHub</span> × <strong>{selectedPair.internship.company}</strong>
+                                        </div>
+                                        <p className="cert-preview-name">{selectedPair.student.name}</p>
+                                        <p className="cert-preview-title">{selectedPair.internship.title}</p>
+                                    </div>
+                                    <div className="form-group" style={{ marginTop: '1rem' }}>
+                                        <label><FiAward /> Grade</label>
+                                        <div className="grade-selector" style={{ marginTop: '0.5rem' }}>
+                                            {['A+', 'A', 'B+', 'B', 'C+', 'C'].map(g => (
+                                                <button
+                                                    key={g}
+                                                    type="button"
+                                                    className={`grade-btn ${grade === g ? 'active' : ''}`}
+                                                    style={grade === g ? { background: gradeColors[g], borderColor: gradeColors[g], color: 'white' } : {}}
+                                                    onClick={() => setGrade(g)}
+                                                >{g}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <button className="btn btn-primary" onClick={handleSubmit} disabled={loading} style={{ marginTop: '1rem' }}>
+                                        <FiSend /> {loading ? 'Issuing...' : 'Issue Certificate'}
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="empty-state-card">
+                            <FiCheckCircle style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#10b981' }} />
+                            <p>All eligible students have already received their certificates!</p>
+                        </div>
+                    )}
+
+                    {/* Not Yet Eligible */}
+                    {notYetEligible.length > 0 && (
+                        <div style={{ marginTop: '1.5rem' }}>
+                            <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                                <FiAlertTriangle /> Not Yet Eligible ({notYetEligible.length})
+                            </h4>
+                            <div className="ineligible-list">
+                                {notYetEligible.map((e, i) => (
+                                    <div key={`ne-${e.student.id}-${e.internship.id}-${i}`} className="ineligible-item">
+                                        <span className="ineligible-name">{e.student.name}</span>
+                                        <span className="ineligible-intern">{e.internship.title}</span>
+                                        <span className="ineligible-progress">
+                                            {e.completedTasks}/{e.totalTasks} tasks ({e.completionRate}%)
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                            <FiSend /> {loading ? 'Issuing...' : 'Issue Certificate'}
-                        </button>
-                    </form>
+                    )}
                 </div>
             )}
 
             <div className="cert-grid">
                 {certificates.map(c => (
-                    <div key={c.id} className="cert-card">
+                    <div key={c.id} className="cert-card cert-card-pro">
+                        <div className="cert-card-gradient-border"></div>
                         <div className="cert-card-top">
                             <div className="cert-icon"><FiAward /></div>
                             <div className="cert-grade" style={{ color: gradeColors[c.grade] || '#64748b' }}>{c.grade}</div>
@@ -93,19 +175,19 @@ const Certificates = () => {
                         <p className="cert-company">{c.internship?.company}</p>
                         <div className="cert-details">
                             <div className="cert-detail-row">
-                                <span>Student</span>
+                                <span><FiUser /> Student</span>
                                 <strong>{c.student?.name}</strong>
                             </div>
                             <div className="cert-detail-row">
-                                <span>ID</span>
-                                <span className="user-id-badge">{c.student?.userId}</span>
+                                <span><FiHash /> ID</span>
+                                <span className="cert-id-badge">{c.certificateId || `CERT-${c.id}`}</span>
                             </div>
                             <div className="cert-detail-row">
-                                <span>Issued by</span>
+                                <span><FiSend /> Issued by</span>
                                 <strong>{c.issuedBy?.name}</strong>
                             </div>
                             <div className="cert-detail-row">
-                                <span>Date</span>
+                                <span><FiCalendar /> Date</span>
                                 <strong>{new Date(c.issuedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
                             </div>
                         </div>

@@ -1,6 +1,8 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCheckCircle, FiUsers, FiBarChart2, FiAward, FiArrowRight, FiStar, FiBriefcase, FiHeart, FiGithub, FiTwitter, FiLinkedin } from 'react-icons/fi';
+import { FiCheckCircle, FiUsers, FiBarChart2, FiAward, FiArrowRight, FiStar, FiBriefcase } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const HomePage = () => {
     const features = [
@@ -23,6 +25,44 @@ const HomePage = () => {
         { name: 'Sneha Reddy', role: 'Employer', text: 'Managing interns remotely has never been easier. InternHub\'s evaluation tools save us hours every week.', rating: 5 },
     ];
 
+    const trustedBy = ['KL University', 'TCS', 'Infosys', 'Wipro', 'HCL Tech', 'Tech Mahindra'];
+
+    // Animated counters
+    const [countersVisible, setCountersVisible] = useState(false);
+    const statsRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setCountersVisible(true); },
+            { threshold: 0.5 }
+        );
+        if (statsRef.current) observer.observe(statsRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const AnimatedCounter = ({ end, suffix = '' }) => {
+        const [val, setVal] = useState(0);
+        useEffect(() => {
+            if (!countersVisible) return;
+            let start = 0;
+            const duration = 1500;
+            const step = (timestamp) => {
+                if (!start) start = timestamp;
+                const progress = Math.min((timestamp - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                setVal(Math.floor(eased * end));
+                if (progress < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+        }, [countersVisible, end]);
+        return <strong>{val.toLocaleString()}{suffix}</strong>;
+    };
+
+    // Smooth scroll for anchor links
+    const scrollToSection = (id) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <div className="public-page">
             <Navbar />
@@ -33,6 +73,19 @@ const HomePage = () => {
                     <div className="hero-shape hero-shape-1"></div>
                     <div className="hero-shape hero-shape-2"></div>
                     <div className="hero-shape hero-shape-3"></div>
+                </div>
+                {/* Floating Particles */}
+                <div className="hero-particles">
+                    {[...Array(20)].map((_, i) => (
+                        <div key={i} className="particle" style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            animationDuration: `${3 + Math.random() * 4}s`,
+                            width: `${2 + Math.random() * 4}px`,
+                            height: `${2 + Math.random() * 4}px`,
+                        }}></div>
+                    ))}
                 </div>
                 <div className="hero-content">
                     <div className="hero-badge">🚀 The #1 Remote Internship Platform</div>
@@ -45,25 +98,39 @@ const HomePage = () => {
                         <Link to="/register" className="hero-btn hero-btn-primary">
                             Get Started Free <FiArrowRight />
                         </Link>
-                        <Link to="/contact" className="hero-btn hero-btn-secondary">
+                        <button onClick={() => scrollToSection('features')} className="hero-btn hero-btn-secondary">
                             Learn More
-                        </Link>
+                        </button>
                     </div>
-                    <div className="hero-stats">
+                    <div className="hero-stats" ref={statsRef}>
                         <div className="hero-stat">
-                            <strong>2,500+</strong>
+                            <AnimatedCounter end={2500} suffix="+" />
                             <span>Active Interns</span>
                         </div>
                         <div className="hero-stat-divider"></div>
                         <div className="hero-stat">
-                            <strong>150+</strong>
+                            <AnimatedCounter end={150} suffix="+" />
                             <span>Companies</span>
                         </div>
                         <div className="hero-stat-divider"></div>
                         <div className="hero-stat">
-                            <strong>98%</strong>
+                            <AnimatedCounter end={98} suffix="%" />
                             <span>Satisfaction</span>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Trusted By */}
+            <section className="trusted-section">
+                <div className="section-container">
+                    <p className="trusted-label">Trusted by students and employers at</p>
+                    <div className="trusted-logos">
+                        {trustedBy.map((name, i) => (
+                            <div key={i} className="trusted-logo-item">
+                                <span>{name}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -89,7 +156,7 @@ const HomePage = () => {
             </section>
 
             {/* How It Works */}
-            <section className="how-it-works-section">
+            <section className="how-it-works-section" id="how-it-works">
                 <div className="section-container">
                     <div className="section-header">
                         <span className="section-tag">How It Works</span>
@@ -150,38 +217,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="public-footer">
-                <div className="footer-inner">
-                    <div className="footer-brand">
-                        <div className="footer-logo">
-                            <FiBriefcase />
-                            <span>InternHub</span>
-                        </div>
-                        <p>Empowering the next generation of professionals through structured remote internships.</p>
-                        <div className="footer-social">
-                            <a href="#" aria-label="Github"><FiGithub /></a>
-                            <a href="#" aria-label="Twitter"><FiTwitter /></a>
-                            <a href="#" aria-label="LinkedIn"><FiLinkedin /></a>
-                        </div>
-                    </div>
-                    <div className="footer-links-group">
-                        <h4>Platform</h4>
-                        <Link to="/register">Sign Up</Link>
-                        <Link to="/login">Log In</Link>
-                        <Link to="/contact">Contact</Link>
-                    </div>
-                    <div className="footer-links-group">
-                        <h4>Resources</h4>
-                        <a href="#">Help Center</a>
-                        <a href="#">Blog</a>
-                        <a href="#">FAQ</a>
-                    </div>
-                </div>
-                <div className="footer-bottom">
-                    <p>Made with <FiHeart className="footer-heart" /> by InternHub Team · © 2026</p>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };

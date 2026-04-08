@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getUsers, getAllTasks, getAllFeedback, getAllApplications, createUser, deleteUser } from '../../services/api';
-import { FiUser, FiMail, FiCalendar, FiSearch, FiStar, FiCheckSquare, FiPlus, FiTrash2, FiShield, FiX, FiLock } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiSearch, FiStar, FiCheckSquare, FiPlus, FiTrash2, FiShield, FiX, FiLock, FiDownload } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { exportToCSV, formatUsersForExport } from '../../utils/exportCSV';
 
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
@@ -143,6 +144,9 @@ const ManageUsers = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <button className="action-btn" onClick={() => exportToCSV(formatUsersForExport(users), 'InternHub_Users')} title="Export all users">
+                    <FiDownload /> Export
+                </button>
                 <button className="action-btn add-user-btn" onClick={() => setShowAddModal(true)}>
                     <FiPlus /> Add User
                 </button>

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '../services/api';
-import { FiBell, FiSettings, FiCheck, FiCheckCircle } from 'react-icons/fi';
+import { FiBell, FiSettings, FiCheck, FiCheckCircle, FiChevronRight } from 'react-icons/fi';
 
 const Layout = () => {
     const { user } = useAuth();
@@ -11,6 +11,17 @@ const Layout = () => {
     const [notifications, setNotifications] = useState([]);
     const [showNotifs, setShowNotifs] = useState(false);
     const notifRef = useRef(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('sidebar-collapsed') === 'true';
+    });
+
+    const handleSidebarToggle = () => {
+        setSidebarCollapsed(prev => {
+            const newVal = !prev;
+            localStorage.setItem('sidebar-collapsed', String(newVal));
+            return newVal;
+        });
+    };
 
     const pageTitles = {
         '/admin': 'Dashboard',
@@ -19,12 +30,20 @@ const Layout = () => {
         '/admin/tasks': 'Task Management',
         '/admin/evaluate': 'Evaluate Interns',
         '/admin/users': 'Manage Users',
+        '/admin/announcements': 'Announcements',
+        '/admin/certificates': 'Certificates',
+        '/admin/reports': 'Review Reports',
+        '/admin/analytics': 'Analytics',
         '/admin/settings': 'Settings',
         '/student': 'Dashboard',
         '/student/internships': 'Browse Internships',
         '/student/tasks': 'My Tasks',
         '/student/progress': 'My Progress',
         '/student/feedback': 'My Feedback',
+        '/student/applications': 'My Applications',
+        '/student/announcements': 'Announcements',
+        '/student/reports': 'Submit Report',
+        '/student/certificates': 'My Certificates',
         '/student/settings': 'Settings',
     };
 
@@ -76,15 +95,60 @@ const Layout = () => {
         }
     };
 
+    // Time-of-day greeting
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
+
+    // Breadcrumb
+    const getBreadcrumbs = () => {
+        const parts = location.pathname.split('/').filter(Boolean);
+        if (parts.length <= 1) return null;
+        const crumbs = [];
+        let path = '';
+        for (const part of parts) {
+            path += '/' + part;
+            crumbs.push({
+                label: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
+                path,
+            });
+        }
+        return crumbs;
+    };
+
+    const breadcrumbs = getBreadcrumbs();
+
     return (
-        <div className="app-layout">
-            <Sidebar />
+        <div className={`app-layout ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
+            <Sidebar collapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
             <main className="main-content">
                 <div className="top-header">
                     <div className="header-left">
-                        <h2 className="page-title">{pageTitles[location.pathname] || 'Dashboard'}</h2>
+                        <div className="header-title-area">
+                            <h2 className="page-title">{pageTitles[location.pathname] || 'Dashboard'}</h2>
+                            {breadcrumbs && (
+                                <div className="breadcrumb-nav">
+                                    {breadcrumbs.map((crumb, i) => (
+                                        <span key={crumb.path}>
+                                            {i > 0 && <FiChevronRight className="breadcrumb-sep" />}
+                                            {i === breadcrumbs.length - 1 ? (
+                                                <span className="breadcrumb-current">{crumb.label}</span>
+                                            ) : (
+                                                <Link to={crumb.path} className="breadcrumb-link">{crumb.label}</Link>
+                                            )}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="header-right">
+                        {/* Greeting */}
+                        <span className="header-greeting">{getGreeting()}, {user?.name?.split(' ')[0]}!</span>
+
                         {/* Notifications */}
                         <div className="notif-wrapper" ref={notifRef}>
                             <button className="icon-btn notif-btn" onClick={() => setShowNotifs(!showNotifs)} title="Notifications">

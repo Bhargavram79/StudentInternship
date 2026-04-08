@@ -1,15 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
 
 import HomePage from './pages/HomePage';
 import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageInternships from './pages/admin/ManageInternships';
@@ -37,6 +39,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -72,7 +75,8 @@ function App() {
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" />} />
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} theme="colored" />
       </BrowserRouter>

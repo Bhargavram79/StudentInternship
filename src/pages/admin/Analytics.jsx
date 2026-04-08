@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllApplications, getAllTasks, getInternships, getStudents, getAllFeedback, getAllReports, getCertificates } from '../../services/api';
-import { FiTrendingUp, FiUsers, FiBriefcase, FiCheckSquare, FiAward, FiBarChart2, FiPieChart } from 'react-icons/fi';
+import { FiTrendingUp, FiUsers, FiBriefcase, FiCheckSquare, FiAward, FiBarChart2, FiPieChart, FiDownload } from 'react-icons/fi';
+import { exportToCSV, formatAnalyticsForExport } from '../../utils/exportCSV';
 
 const Analytics = () => {
     const [data, setData] = useState(null);
@@ -75,8 +76,13 @@ const Analytics = () => {
     return (
         <div className="dashboard-page">
             <div className="page-header">
-                <h1><FiTrendingUp /> Platform Analytics</h1>
-                <p>Comprehensive overview of platform performance</p>
+                <div>
+                    <h1><FiTrendingUp /> Platform Analytics</h1>
+                    <p>Comprehensive overview of platform performance</p>
+                </div>
+                <button className="btn btn-outline" onClick={() => exportToCSV(formatAnalyticsForExport(data), 'InternHub_Analytics')}>
+                    <FiDownload /> Export Report
+                </button>
             </div>
 
             {/* Key Metrics */}

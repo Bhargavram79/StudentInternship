@@ -1,8 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiBriefcase, FiFileText, FiCheckSquare, FiUsers, FiStar, FiBarChart2, FiMessageSquare, FiLogOut, FiSettings, FiAward, FiBell, FiTrendingUp, FiClipboard, FiSend } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiHome, FiBriefcase, FiFileText, FiCheckSquare, FiUsers, FiStar, FiBarChart2, FiMessageSquare, FiLogOut, FiSettings, FiAward, FiBell, FiTrendingUp, FiClipboard, FiSend, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed, onToggle }) => {
     const { user, logout } = useAuth();
     const location = useLocation();
 
@@ -36,18 +37,25 @@ const Sidebar = () => {
     const links = user?.role === 'ADMIN' ? adminLinks : studentLinks;
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
             <div className="sidebar-brand">
                 <FiBriefcase className="brand-icon" />
-                <span className="brand-text">InternHub</span>
+                {!collapsed && <span className="brand-text">InternHub</span>}
             </div>
-            <div className="sidebar-user">
-                <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
-                <div className="user-info">
-                    <span className="user-name">{user?.name}</span>
-                    <span className="user-role">{user?.userId || user?.role}</span>
+            {!collapsed && (
+                <div className="sidebar-user">
+                    <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
+                    <div className="user-info">
+                        <span className="user-name">{user?.name}</span>
+                        <span className="user-role">{user?.userId || user?.role}</span>
+                    </div>
                 </div>
-            </div>
+            )}
+            {collapsed && (
+                <div className="sidebar-user-collapsed">
+                    <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
+                </div>
+            )}
             <nav className="sidebar-nav">
                 {links.map((link) => (
                     <NavLink
@@ -55,16 +63,21 @@ const Sidebar = () => {
                         to={link.path}
                         end={link.path === '/admin' || link.path === '/student'}
                         className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                        title={collapsed ? link.label : ''}
                     >
                         {link.icon}
-                        <span>{link.label}</span>
+                        {!collapsed && <span>{link.label}</span>}
                     </NavLink>
                 ))}
             </nav>
             <div className="sidebar-footer">
-                <button className="logout-btn" onClick={logout}>
+                <button className="sidebar-toggle-btn" onClick={onToggle} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+                    {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
+                    {!collapsed && <span>Collapse</span>}
+                </button>
+                <button className="logout-btn" onClick={logout} title={collapsed ? 'Logout' : ''}>
                     <FiLogOut />
-                    <span>Logout</span>
+                    {!collapsed && <span>Logout</span>}
                 </button>
             </div>
         </aside>

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { FiBriefcase, FiMail, FiLock, FiArrowRight, FiRefreshCw } from 'react-icons/fi';
+import { FiBriefcase, FiMail, FiLock, FiArrowRight, FiRefreshCw, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 
@@ -19,6 +19,7 @@ const generateCaptchaText = () => {
 const LoginPage = () => {
     const [form, setForm] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [captchaText, setCaptchaText] = useState('');
     const [captchaInput, setCaptchaInput] = useState('');
     const [captchaError, setCaptchaError] = useState('');
@@ -164,12 +165,15 @@ const LoginPage = () => {
                                 <div className="public-input-wrap">
                                     <FiLock className="public-input-icon" />
                                     <input
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         placeholder="••••••••"
                                         value={form.password}
                                         onChange={(e) => setForm({ ...form, password: e.target.value })}
                                         required
                                     />
+                                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                                        {showPassword ? <FiEyeOff /> : <FiEye />}
+                                    </button>
                                 </div>
                             </div>
 

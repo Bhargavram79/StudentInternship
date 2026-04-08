@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../../services/api';
 import { FiPlus, FiTrash2, FiAlertTriangle, FiBell, FiX, FiSend } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 const Announcements = () => {
     const [announcements, setAnnouncements] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ title: '', message: '', priority: 'normal' });
     const [loading, setLoading] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => { fetchData(); }, []);
 
@@ -32,12 +34,14 @@ const Announcements = () => {
         finally { setLoading(false); }
     };
 
-    const handleDelete = async (id) => {
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
         try {
-            await deleteAnnouncement(id);
+            await deleteAnnouncement(deleteTarget);
             toast.success('Announcement deleted');
             fetchData();
         } catch (err) { toast.error('Failed to delete'); }
+        finally { setDeleteTarget(null); }
     };
 
     return (
@@ -89,7 +93,7 @@ const Announcements = () => {
                         {a.priority === 'urgent' && <div className="announce-urgent-tag"><FiAlertTriangle /> Urgent</div>}
                         <div className="announce-header">
                             <h3>{a.title}</h3>
-                            <button className="btn-icon-sm btn-danger" onClick={() => handleDelete(a.id)} title="Delete">
+                            <button className="btn-icon-sm btn-danger" onClick={() => setDeleteTarget(a.id)} title="Delete">
                                 <FiTrash2 />
                             </button>
                         </div>
@@ -102,6 +106,15 @@ const Announcements = () => {
                 ))}
                 {announcements.length === 0 && <div className="empty-state-card">No announcements yet</div>}
             </div>
+
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Delete Announcement"
+                message="Are you sure you want to delete this announcement? This action cannot be undone."
+                confirmText="Delete"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </div>
     );
 };

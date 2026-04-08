@@ -2,13 +2,29 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { FiBriefcase, FiUser, FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiBriefcase, FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 
 const RegisterPage = () => {
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const getPasswordStrength = (pwd) => {
+        if (!pwd) return { level: 0, label: '', color: '' };
+        let score = 0;
+        if (pwd.length >= 6) score++;
+        if (pwd.length >= 10) score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[0-9]/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+        if (score <= 1) return { level: 1, label: 'Weak', color: '#ef4444' };
+        if (score <= 3) return { level: 2, label: 'Medium', color: '#f59e0b' };
+        return { level: 3, label: 'Strong', color: '#10b981' };
+    };
+
+    const pwdStrength = getPasswordStrength(form.password);
     const { loginUser } = useAuth();
     const navigate = useNavigate();
 
@@ -97,13 +113,24 @@ const RegisterPage = () => {
                                 <div className="public-input-wrap">
                                     <FiLock className="public-input-icon" />
                                     <input
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         placeholder="••••••••"
                                         value={form.password}
                                         onChange={(e) => setForm({ ...form, password: e.target.value })}
                                         required
                                     />
+                                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                                        {showPassword ? <FiEyeOff /> : <FiEye />}
+                                    </button>
                                 </div>
+                                {form.password && (
+                                    <div className="password-strength">
+                                        <div className="strength-bar">
+                                            <div className="strength-fill" style={{ width: `${(pwdStrength.level / 3) * 100}%`, background: pwdStrength.color }}></div>
+                                        </div>
+                                        <span className="strength-label" style={{ color: pwdStrength.color }}>{pwdStrength.label}</span>
+                                    </div>
+                                )}
                             </div>
                             <button type="submit" className="public-auth-btn" disabled={loading}>
                                 {loading ? 'Creating Account...' : <>Create Account <FiArrowRight /></>}
