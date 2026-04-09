@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Base URL — uses Vite proxy in dev, env variable in production
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL: 'https://5400b8eb24f88a.lhr.life/api',
 });
 
 // ✅ Add JWT token to every request

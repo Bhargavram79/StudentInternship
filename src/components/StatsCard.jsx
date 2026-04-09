@@ -32,7 +32,7 @@ const StatsCard = ({ icon, title, value, color, trend }) => {
     const gradient = gradients[color] || `linear-gradient(135deg, ${color} 0%, ${color}88 100%)`;
 
     return (
-        <div className="stats-card" ref={cardRef}>
+        <div className="stats-card glass-card" ref={cardRef}>
             <div className="stats-icon" style={{ background: bgColor, color: color }}>
                 {icon}
             </div>

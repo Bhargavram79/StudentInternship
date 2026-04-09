@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiUsers, FiBarChart2, FiAward, FiArrowRight, FiStar, FiBriefcase } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ScrollReveal from '../components/ScrollReveal';
 
 const HomePage = () => {
     const features = [
@@ -88,68 +89,89 @@ const HomePage = () => {
                     ))}
                 </div>
                 <div className="hero-content">
-                    <div className="hero-badge">🚀 The #1 Remote Internship Platform</div>
-                    <h1>Launch Your Career with <span className="hero-highlight">InternHub</span></h1>
-                    <p className="hero-subtitle">
-                        A modern platform to discover remote internships, track your progress, and receive
-                        real-time mentor feedback — all in one beautiful workspace.
-                    </p>
-                    <div className="hero-actions">
-                        <Link to="/register" className="hero-btn hero-btn-primary">
-                            Get Started Free <FiArrowRight />
-                        </Link>
-                        <button onClick={() => scrollToSection('features')} className="hero-btn hero-btn-secondary">
-                            Learn More
-                        </button>
-                    </div>
-                    <div className="hero-stats" ref={statsRef}>
-                        <div className="hero-stat">
-                            <AnimatedCounter end={2500} suffix="+" />
-                            <span>Active Interns</span>
+                    <ScrollReveal direction="down" delay={0.1}>
+                        <div className="hero-badge">🚀 The #1 Remote Internship Platform</div>
+                    </ScrollReveal>
+                    
+                    <ScrollReveal direction="up" delay={0.2}>
+                        <h1>Launch Your Career with <span className="hero-highlight">InternHub</span></h1>
+                    </ScrollReveal>
+                    
+                    <ScrollReveal direction="up" delay={0.3}>
+                        <p className="hero-subtitle">
+                            A modern platform to discover remote internships, track your progress, and receive
+                            real-time mentor feedback — all in one beautiful workspace.
+                        </p>
+                    </ScrollReveal>
+
+                    <ScrollReveal direction="up" delay={0.4}>
+                        <div className="hero-actions">
+                            <Link to="/register" className="hero-btn hero-btn-primary">
+                                Get Started Free <FiArrowRight />
+                            </Link>
+                            <button onClick={() => scrollToSection('features')} className="hero-btn hero-btn-secondary">
+                                Learn More
+                            </button>
                         </div>
-                        <div className="hero-stat-divider"></div>
-                        <div className="hero-stat">
-                            <AnimatedCounter end={150} suffix="+" />
-                            <span>Companies</span>
+                    </ScrollReveal>
+
+                    <ScrollReveal direction="up" delay={0.5}>
+                        <div className="hero-stats" ref={statsRef}>
+                            <div className="hero-stat">
+                                <AnimatedCounter end={2500} suffix="+" />
+                                <span>Active Interns</span>
+                            </div>
+                            <div className="hero-stat-divider"></div>
+                            <div className="hero-stat">
+                                <AnimatedCounter end={150} suffix="+" />
+                                <span>Companies</span>
+                            </div>
+                            <div className="hero-stat-divider"></div>
+                            <div className="hero-stat">
+                                <AnimatedCounter end={98} suffix="%" />
+                                <span>Satisfaction</span>
+                            </div>
                         </div>
-                        <div className="hero-stat-divider"></div>
-                        <div className="hero-stat">
-                            <AnimatedCounter end={98} suffix="%" />
-                            <span>Satisfaction</span>
-                        </div>
-                    </div>
+                    </ScrollReveal>
                 </div>
             </section>
 
             {/* Trusted By */}
             <section className="trusted-section">
                 <div className="section-container">
-                    <p className="trusted-label">Trusted by students and employers at</p>
-                    <div className="trusted-logos">
-                        {trustedBy.map((name, i) => (
-                            <div key={i} className="trusted-logo-item">
-                                <span>{name}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <ScrollReveal delay={0.1}>
+                        <p className="trusted-label">Trusted by students and employers at</p>
+                        <div className="trusted-logos">
+                            {trustedBy.map((name, i) => (
+                                <div key={i} className="trusted-logo-item">
+                                    <span>{name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollReveal>
                 </div>
             </section>
 
             {/* Features */}
             <section className="features-section" id="features">
                 <div className="section-container">
-                    <div className="section-header">
-                        <span className="section-tag">Features</span>
-                        <h2>Everything you need to succeed</h2>
-                        <p>Powerful tools designed to make remote internships productive and enjoyable.</p>
-                    </div>
+                    <ScrollReveal delay={0.1}>
+                        <div className="section-header">
+                            <span className="section-tag">Features</span>
+                            <h2>Everything you need to succeed</h2>
+                            <p>Powerful tools designed to make remote internships productive and enjoyable.</p>
+                        </div>
+                    </ScrollReveal>
+                    
                     <div className="features-grid">
                         {features.map((f, i) => (
-                            <div className="feature-card" key={i} style={{ animationDelay: `${i * 0.1}s` }}>
-                                <div className="feature-icon">{f.icon}</div>
-                                <h3>{f.title}</h3>
-                                <p>{f.desc}</p>
-                            </div>
+                            <ScrollReveal key={i} direction="up" delay={0.1 * (i + 1)} className="feature-card-wrapper">
+                                <div className="feature-card">
+                                    <div className="feature-icon">{f.icon}</div>
+                                    <h3>{f.title}</h3>
+                                    <p>{f.desc}</p>
+                                </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 </div>
@@ -158,19 +180,24 @@ const HomePage = () => {
             {/* How It Works */}
             <section className="how-it-works-section" id="how-it-works">
                 <div className="section-container">
-                    <div className="section-header">
-                        <span className="section-tag">How It Works</span>
-                        <h2>Simple steps to get started</h2>
-                        <p>From signup to certification — your complete internship journey.</p>
-                    </div>
+                    <ScrollReveal delay={0.1}>
+                        <div className="section-header">
+                            <span className="section-tag">How It Works</span>
+                            <h2>Simple steps to get started</h2>
+                            <p>From signup to certification — your complete internship journey.</p>
+                        </div>
+                    </ScrollReveal>
+
                     <div className="steps-grid">
                         {steps.map((s, i) => (
-                            <div className="step-card" key={i}>
-                                <div className="step-num">{s.num}</div>
-                                <h3>{s.title}</h3>
-                                <p>{s.desc}</p>
-                                {i < steps.length - 1 && <div className="step-connector"></div>}
-                            </div>
+                            <ScrollReveal key={i} direction="up" delay={0.1 * (i + 1)}>
+                                <div className="step-card">
+                                    <div className="step-num">{s.num}</div>
+                                    <h3>{s.title}</h3>
+                                    <p>{s.desc}</p>
+                                    {i < steps.length - 1 && <div className="step-connector"></div>}
+                                </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 </div>
@@ -179,26 +206,31 @@ const HomePage = () => {
             {/* Testimonials */}
             <section className="testimonials-section">
                 <div className="section-container">
-                    <div className="section-header">
-                        <span className="section-tag">Testimonials</span>
-                        <h2>Loved by students & employers</h2>
-                        <p>See what our community has to say about InternHub.</p>
-                    </div>
+                    <ScrollReveal delay={0.1}>
+                        <div className="section-header">
+                            <span className="section-tag">Testimonials</span>
+                            <h2>Loved by students & employers</h2>
+                            <p>See what our community has to say about InternHub.</p>
+                        </div>
+                    </ScrollReveal>
+
                     <div className="testimonials-grid">
                         {testimonials.map((t, i) => (
-                            <div className="testimonial-card" key={i}>
-                                <div className="testimonial-stars">
-                                    {[...Array(t.rating)].map((_, j) => <FiStar key={j} />)}
-                                </div>
-                                <p className="testimonial-text">"{t.text}"</p>
-                                <div className="testimonial-author">
-                                    <div className="testimonial-avatar">{t.name.charAt(0)}</div>
-                                    <div>
-                                        <strong>{t.name}</strong>
-                                        <span>{t.role}</span>
+                            <ScrollReveal key={i} delay={0.2 * (i + 1)} direction="scale">
+                                <div className="testimonial-card">
+                                    <div className="testimonial-stars">
+                                        {[...Array(t.rating)].map((_, j) => <FiStar key={j} />)}
+                                    </div>
+                                    <p className="testimonial-text">"{t.text}"</p>
+                                    <div className="testimonial-author">
+                                        <div className="testimonial-avatar">{t.name.charAt(0)}</div>
+                                        <div>
+                                            <strong>{t.name}</strong>
+                                            <span>{t.role}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 </div>
@@ -207,15 +239,18 @@ const HomePage = () => {
             {/* CTA Banner */}
             <section className="cta-section">
                 <div className="section-container">
-                    <div className="cta-card">
-                        <h2>Ready to start your journey?</h2>
-                        <p>Join thousands of students and employers on InternHub today.</p>
-                        <Link to="/register" className="hero-btn hero-btn-primary">
-                            Create Free Account <FiArrowRight />
-                        </Link>
-                    </div>
+                    <ScrollReveal delay={0.2} direction="up">
+                        <div className="cta-card">
+                            <h2>Ready to start your journey?</h2>
+                            <p>Join thousands of students and employers on InternHub today.</p>
+                            <Link to="/register" className="hero-btn hero-btn-primary">
+                                Create Free Account <FiArrowRight />
+                            </Link>
+                        </div>
+                    </ScrollReveal>
                 </div>
             </section>
+
 
             <Footer />
         </div>

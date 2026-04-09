@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getInternships, applyToInternship, getMyApplications } from '../../services/api';
 import StatusBadge from '../../components/StatusBadge';
+import SkeletonLoader from '../../components/SkeletonLoader';
+import ScrollReveal from '../../components/ScrollReveal';
 import { FiSend, FiClock, FiMapPin, FiSearch, FiFilter, FiX, FiDollarSign, FiMonitor, FiGlobe } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
@@ -13,6 +15,7 @@ const BrowseInternships = () => {
     const [durationFilter, setDurationFilter] = useState('All');
     const [typeFilter, setTypeFilter] = useState('All');
     const [sortBy, setSortBy] = useState('newest');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => { fetchData(); }, []);
 
@@ -40,6 +43,7 @@ const BrowseInternships = () => {
     }, [internships, search, modeFilter, durationFilter, typeFilter, sortBy]);
 
     const fetchData = async () => {
+        setLoading(true);
         try {
             const [intRes, appRes] = await Promise.all([getInternships(), getMyApplications()]);
             setInternships(intRes.data);
@@ -47,6 +51,7 @@ const BrowseInternships = () => {
             const ids = new Set(appRes.data.map(a => a.internship?.id));
             setAppliedIds(ids);
         } catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     const handleApply = async (id) => {
@@ -77,95 +82,109 @@ const BrowseInternships = () => {
     return (
         <div className="dashboard-page">
             <div className="page-header">
-                <h1>Browse Internships</h1>
-                <p>{filtered.length} internship{filtered.length !== 1 ? 's' : ''} available</p>
+                <ScrollReveal direction="down" delay={0.1}>
+                    <h1>Browse Internships</h1>
+                    <p>{filtered.length} internship{filtered.length !== 1 ? 's' : ''} available</p>
+                </ScrollReveal>
             </div>
 
             {/* Filter Bar */}
-            <div className="filter-bar">
-                <div className="filter-search">
-                    <FiSearch className="filter-search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Search by title, company, or skills..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+            <ScrollReveal direction="up" delay={0.2}>
+                <div className="filter-bar glass-card">
+                    <div className="filter-search">
+                        <FiSearch className="filter-search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Search by title, company, or skills..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <div className="filter-chips">
+                        <select className="filter-select" value={modeFilter} onChange={(e) => setModeFilter(e.target.value)}>
+                            <option value="All">All Modes</option>
+                            <option value="Online">🌐 Online</option>
+                            <option value="Offline">📍 Offline</option>
+                            <option value="Hybrid">💻 Hybrid</option>
+                        </select>
+                        <select className="filter-select" value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)}>
+                            {durations.map(d => <option key={d} value={d}>{d === 'All' ? 'All Durations' : d}</option>)}
+                        </select>
+                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                            <option value="All">All Types</option>
+                            <option value="Free">🆓 Free</option>
+                            <option value="Paid">💰 Paid</option>
+                        </select>
+                        <select className="filter-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="company">By Company</option>
+                            <option value="duration">By Duration</option>
+                        </select>
+                        {hasFilters && (
+                            <button className="filter-clear" onClick={clearFilters}>
+                                <FiX /> Clear
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <div className="filter-chips">
-                    <select className="filter-select" value={modeFilter} onChange={(e) => setModeFilter(e.target.value)}>
-                        <option value="All">All Modes</option>
-                        <option value="Online">🌐 Online</option>
-                        <option value="Offline">📍 Offline</option>
-                        <option value="Hybrid">💻 Hybrid</option>
-                    </select>
-                    <select className="filter-select" value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)}>
-                        {durations.map(d => <option key={d} value={d}>{d === 'All' ? 'All Durations' : d}</option>)}
-                    </select>
-                    <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                        <option value="All">All Types</option>
-                        <option value="Free">🆓 Free</option>
-                        <option value="Paid">💰 Paid</option>
-                    </select>
-                    <select className="filter-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="company">By Company</option>
-                        <option value="duration">By Duration</option>
-                    </select>
-                    {hasFilters && (
-                        <button className="filter-clear" onClick={clearFilters}>
-                            <FiX /> Clear
-                        </button>
+            </ScrollReveal>
+
+            {loading ? (
+                <div className="internship-grid" style={{ marginTop: '24px' }}>
+                     <SkeletonLoader count={6} type="card" />
+                </div>
+            ) : (
+                <div className="internship-grid">
+                    {filtered.map((i, index) => (
+                        <ScrollReveal key={i.id} direction="scale" delay={Math.min(0.1 * index, 0.5)}>
+                            <div className="internship-card glass-card">
+                                <div className="internship-card-header">
+                                    <h3>{i.title}</h3>
+                                    <span className="company-name">{i.company}</span>
+                                </div>
+                                <p className="internship-desc">{i.description}</p>
+                                <div className="internship-badges">
+                                    <span className={`intern-badge mode-${i.mode?.toLowerCase()}`}>
+                                        {getModeIcon(i.mode)} {i.mode}
+                                    </span>
+                                    <span className="intern-badge duration">
+                                        <FiClock /> {i.duration}
+                                    </span>
+                                    <span className={`intern-badge type-${i.type?.toLowerCase()}`}>
+                                        {i.type === 'Paid' ? <FiDollarSign /> : '🆓'} {i.type}
+                                    </span>
+                                    {i.stipend && (
+                                        <span className="intern-badge stipend">{i.stipend}</span>
+                                    )}
+                                </div>
+                                <div className="internship-meta">
+                                    {i.skills && <span><FiFilter /> {i.skills}</span>}
+                                </div>
+                                <div className="internship-card-footer">
+                                    {appliedIds.has(i.id) ? (
+                                        <StatusBadge status="PENDING" />
+                                    ) : (
+                                        <button className="btn btn-primary btn-premium" onClick={() => handleApply(i.id)}>
+                                            <FiSend /> Apply Now
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </ScrollReveal>
+                    ))}
+                    {filtered.length === 0 && (
+                        <ScrollReveal>
+                            <div className="empty-state-card glass-card">
+                                No internships match your filters.
+                                <button className="filter-clear" onClick={clearFilters} style={{ marginTop: '0.5rem' }}>
+                                    <FiX /> Clear filters
+                                </button>
+                            </div>
+                        </ScrollReveal>
                     )}
                 </div>
-            </div>
-
-            <div className="internship-grid">
-                {filtered.map((i) => (
-                    <div key={i.id} className="internship-card">
-                        <div className="internship-card-header">
-                            <h3>{i.title}</h3>
-                            <span className="company-name">{i.company}</span>
-                        </div>
-                        <p className="internship-desc">{i.description}</p>
-                        <div className="internship-badges">
-                            <span className={`intern-badge mode-${i.mode?.toLowerCase()}`}>
-                                {getModeIcon(i.mode)} {i.mode}
-                            </span>
-                            <span className="intern-badge duration">
-                                <FiClock /> {i.duration}
-                            </span>
-                            <span className={`intern-badge type-${i.type?.toLowerCase()}`}>
-                                {i.type === 'Paid' ? <FiDollarSign /> : '🆓'} {i.type}
-                            </span>
-                            {i.stipend && (
-                                <span className="intern-badge stipend">{i.stipend}</span>
-                            )}
-                        </div>
-                        <div className="internship-meta">
-                            {i.skills && <span><FiFilter /> {i.skills}</span>}
-                        </div>
-                        <div className="internship-card-footer">
-                            {appliedIds.has(i.id) ? (
-                                <StatusBadge status="PENDING" />
-                            ) : (
-                                <button className="btn btn-primary" onClick={() => handleApply(i.id)}>
-                                    <FiSend /> Apply Now
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                ))}
-                {filtered.length === 0 && (
-                    <div className="empty-state-card">
-                        No internships match your filters.
-                        <button className="filter-clear" onClick={clearFilters} style={{ marginTop: '0.5rem' }}>
-                            <FiX /> Clear filters
-                        </button>
-                    </div>
-                )}
-            </div>
+            )}
         </div>
     );
 };

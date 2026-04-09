@@ -130,9 +130,9 @@ const LoginPage = () => {
         <div className="public-page">
             <Navbar />
             <div className="public-auth-page">
-                <div className="public-auth-container">
+                <div className="public-auth-container glass-card" style={{ transform: 'none', transition: 'all 0.5s ease-out' }}>
                     <div className="public-auth-left">
-                        <div className="public-auth-brand">
+                        <div className="public-auth-brand" style={{ animation: 'float 6s ease-in-out infinite' }}>
                             <FiBriefcase className="public-auth-brand-icon" />
                             <h1>Welcome Back!</h1>
                             <p>Sign in to continue your internship journey on InternHub.</p>
@@ -210,7 +210,7 @@ const LoginPage = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="public-auth-btn" disabled={loading}>
+                            <button type="submit" className="public-auth-btn btn-premium" disabled={loading}>
                                 {loading ? 'Signing in...' : <>Sign In <FiArrowRight /></>}
                             </button>
                                 <p className="public-auth-footer">
