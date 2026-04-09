@@ -2,9 +2,12 @@
 // Connects React frontend to Spring Boot backend
 import axios from 'axios';
 
-// Base URL — uses Vite proxy in dev, env variable in production
+// Base URL — hardcoded for Github Pages deployment to talk to laptop tunnel
 const API = axios.create({
-    baseURL: 'https://5400b8eb24f88a.lhr.life/api',
+    baseURL: 'https://internhub-api-bhargav.loca.lt/api',
+    headers: {
+        'Bypass-Tunnel-Reminder': 'true'
+    }
 });
 
 // ✅ Add JWT token to every request
