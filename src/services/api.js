@@ -4,10 +4,7 @@ import axios from 'axios';
 
 // Base URL — hardcoded for Github Pages deployment to talk to laptop tunnel
 const API = axios.create({
-    baseURL: 'https://internhub-api-bhargav.loca.lt/api',
-    headers: {
-        'Bypass-Tunnel-Reminder': 'true'
-    }
+    baseURL: 'https://695ef2ba38b780.lhr.life/api',
 });
 
 // ✅ Add JWT token to every request
