@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
+import AIAssistant from './components/AIAssistant';
 
 import HomePage from './pages/HomePage';
 import ContactPage from './pages/ContactPage';
@@ -78,6 +79,7 @@ function App() {
           {/* 404 Not Found */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <AIAssistant />
         <ToastContainer position="top-right" autoClose={3000} theme="colored" />
       </BrowserRouter>
     </AuthProvider>

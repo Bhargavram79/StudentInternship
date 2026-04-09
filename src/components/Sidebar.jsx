@@ -1,11 +1,15 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect } from 'react';
 import { FiHome, FiBriefcase, FiFileText, FiCheckSquare, FiUsers, FiStar, FiBarChart2, FiMessageSquare, FiLogOut, FiSettings, FiAward, FiBell, FiTrendingUp, FiClipboard, FiSend, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const Sidebar = ({ collapsed, onToggle }) => {
     const { user, logout } = useAuth();
-    const location = useLocation();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     const adminLinks = [
         { path: '/admin', icon: <FiHome />, label: 'Dashboard' },
@@ -71,13 +75,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 ))}
             </nav>
             <div className="sidebar-footer">
+                {/* ✅ LOGOUT BUTTON — always visible, red, prominent */}
+                <button className="logout-btn" onClick={handleLogout} title={collapsed ? 'Logout' : ''}>
+                    <FiLogOut />
+                    {!collapsed && <span>Logout</span>}
+                </button>
                 <button className="sidebar-toggle-btn" onClick={onToggle} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
                     {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
                     {!collapsed && <span>Collapse</span>}
-                </button>
-                <button className="logout-btn" onClick={logout} title={collapsed ? 'Logout' : ''}>
-                    <FiLogOut />
-                    {!collapsed && <span>Logout</span>}
                 </button>
             </div>
         </aside>

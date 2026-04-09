@@ -44,6 +44,21 @@ export async function login(data) {
     return res.data;
 }
 
+export async function forgotPassword(email) {
+    const res = await API.post('/auth/forgot-password', { email });
+    return res.data;
+}
+
+export async function verifyOtp(email, otp) {
+    const res = await API.post('/auth/verify-otp', { email, otp });
+    return res.data;
+}
+
+export async function resetPassword(email, otp, newPassword) {
+    const res = await API.post('/auth/reset-password', { email, otp, newPassword });
+    return res.data;
+}
+
 export async function getValidatedUser(userId) {
     const res = await API.get(`/auth/validate/${userId}`);
     return res.data;
@@ -260,6 +275,12 @@ export async function issueCertificate(data) {
 
 export async function getEligibleForCertificate() {
     const res = await API.get('/certificates/eligible');
+    return res.data;
+}
+
+// ====================== AI ASSISTANT ======================
+export async function chatWithAi(message) {
+    const res = await API.post('/ai/chat', { message });
     return res.data;
 }
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import { login, forgotPassword, verifyOtp, resetPassword } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { FiBriefcase, FiMail, FiLock, FiArrowRight, FiRefreshCw, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -23,6 +23,13 @@ const LoginPage = () => {
     const [captchaText, setCaptchaText] = useState('');
     const [captchaInput, setCaptchaInput] = useState('');
     const [captchaError, setCaptchaError] = useState('');
+    
+    // Forgot Password states
+    const [view, setView] = useState('login'); // 'login', 'forgot_email', 'forgot_otp', 'forgot_reset'
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotOtp, setForgotOtp] = useState('');
+    const [forgotNewPassword, setForgotNewPassword] = useState('');
+    
     const canvasRef = useRef(null);
     const { loginUser } = useAuth();
     const navigate = useNavigate();
@@ -146,8 +153,9 @@ const LoginPage = () => {
                         </div>
                     </div>
                     <div className="public-auth-right">
-                        <form className="public-auth-form" onSubmit={handleSubmit}>
-                            <h2>Sign In</h2>
+                        {view === 'login' && (
+                            <form className="public-auth-form" onSubmit={handleSubmit}>
+                                <h2>Sign In</h2>
                             <p className="public-auth-subtitle">Enter your credentials to access your account</p>
                             <div className="public-form-group">
                                 <label>Email Address</label>
@@ -205,10 +213,102 @@ const LoginPage = () => {
                             <button type="submit" className="public-auth-btn" disabled={loading}>
                                 {loading ? 'Signing in...' : <>Sign In <FiArrowRight /></>}
                             </button>
-                            <p className="public-auth-footer">
-                                Don't have an account? <Link to="/register">Create one</Link>
-                            </p>
-                        </form>
+                                <p className="public-auth-footer">
+                                    Don't have an account? <Link to="/register">Create one</Link>
+                                    <br/><br/>
+                                    <a href="#" onClick={(e) => { e.preventDefault(); setView('forgot_email'); }}>Forgot Password?</a>
+                                </p>
+                            </form>
+                        )}
+
+                        {view === 'forgot_email' && (
+                            <form className="public-auth-form" onSubmit={async (e) => {
+                                e.preventDefault();
+                                setLoading(true);
+                                try {
+                                    await forgotPassword(forgotEmail);
+                                    toast.success('OTP sent to your email!');
+                                    setView('forgot_otp');
+                                } catch (err) {
+                                    toast.error(err.response?.data?.error || 'Failed to send OTP');
+                                } finally { setLoading(false); }
+                            }}>
+                                <h2>Reset Password</h2>
+                                <p className="public-auth-subtitle">Enter your registered email address to receive an OTP.</p>
+                                <div className="public-form-group">
+                                    <label>Email Address</label>
+                                    <div className="public-input-wrap">
+                                        <FiMail className="public-input-icon" />
+                                        <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required placeholder="your@email.com" />
+                                    </div>
+                                </div>
+                                <button type="submit" className="public-auth-btn" disabled={loading}>
+                                    {loading ? 'Sending...' : 'Send OTP'}
+                                </button>
+                                <p className="public-auth-footer">
+                                    <a href="#" onClick={(e) => { e.preventDefault(); setView('login'); }}>Back to Login</a>
+                                </p>
+                            </form>
+                        )}
+
+                        {view === 'forgot_otp' && (
+                            <form className="public-auth-form" onSubmit={async (e) => {
+                                e.preventDefault();
+                                setLoading(true);
+                                try {
+                                    await verifyOtp(forgotEmail, forgotOtp);
+                                    toast.success('OTP verified!');
+                                    setView('forgot_reset');
+                                } catch (err) {
+                                    toast.error(err.response?.data?.error || 'Invalid OTP');
+                                } finally { setLoading(false); }
+                            }}>
+                                <h2>Enter OTP</h2>
+                                <p className="public-auth-subtitle">Please enter the 6-digit OTP sent to {forgotEmail}</p>
+                                <div className="public-form-group">
+                                    <label>OTP Code</label>
+                                    <div className="public-input-wrap">
+                                        <FiLock className="public-input-icon" />
+                                        <input type="text" value={forgotOtp} onChange={e => setForgotOtp(e.target.value)} required placeholder="123456" />
+                                    </div>
+                                </div>
+                                <button type="submit" className="public-auth-btn" disabled={loading}>
+                                    {loading ? 'Verifying...' : 'Verify OTP'}
+                                </button>
+                                <p className="public-auth-footer">
+                                    <a href="#" onClick={(e) => { e.preventDefault(); setView('login'); }}>Back to Login</a>
+                                </p>
+                            </form>
+                        )}
+
+                        {view === 'forgot_reset' && (
+                            <form className="public-auth-form" onSubmit={async (e) => {
+                                e.preventDefault();
+                                if(forgotNewPassword.length < 6) { toast.error("Password must be 6+ characters"); return; }
+                                setLoading(true);
+                                try {
+                                    await resetPassword(forgotEmail, forgotOtp, forgotNewPassword);
+                                    toast.success('Password reset successfully! Please log in.');
+                                    setView('login');
+                                    setForgotEmail(''); setForgotOtp(''); setForgotNewPassword('');
+                                } catch (err) {
+                                    toast.error(err.response?.data?.error || 'Failed to reset password');
+                                } finally { setLoading(false); }
+                            }}>
+                                <h2>New Password</h2>
+                                <p className="public-auth-subtitle">Enter your new secure password.</p>
+                                <div className="public-form-group">
+                                    <label>New Password</label>
+                                    <div className="public-input-wrap">
+                                        <FiLock className="public-input-icon" />
+                                        <input type="password" value={forgotNewPassword} onChange={e => setForgotNewPassword(e.target.value)} required placeholder="••••••••" />
+                                    </div>
+                                </div>
+                                <button type="submit" className="public-auth-btn" disabled={loading}>
+                                    {loading ? 'Saving...' : 'Reset Password'}
+                                </button>
+                            </form>
+                        )}
                     </div>
                 </div>
             </div>
