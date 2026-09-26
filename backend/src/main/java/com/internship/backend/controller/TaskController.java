@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -30,6 +32,20 @@ public class TaskController {
         Task task = new Task();
         task.setTitle((String) body.get("title"));
         task.setDescription((String) body.get("description"));
+
+        // Parse deadline — frontend sends as "dueDate" (YYYY-MM-DD string)
+        String dueDateStr = (String) body.get("dueDate");
+        if (dueDateStr != null && !dueDateStr.isEmpty()) {
+            try {
+                task.setDeadline(LocalDate.parse(dueDateStr).atStartOfDay());
+            } catch (Exception e) {
+                // If it's already a full ISO datetime, try parsing that
+                try {
+                    task.setDeadline(LocalDateTime.parse(dueDateStr));
+                } catch (Exception ignored) {}
+            }
+        }
+
         Long assignedToId = body.get("assignedToId") != null ? ((Number) body.get("assignedToId")).longValue() : null;
         Long internshipId = body.get("internshipId") != null ? ((Number) body.get("internshipId")).longValue() : null;
         return ResponseEntity.ok(Map.of("data", taskService.create(task, assignedToId, internshipId)));
